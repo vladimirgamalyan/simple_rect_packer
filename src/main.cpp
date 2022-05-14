@@ -33,12 +33,16 @@ int main(int argc, char* argv[])
         }
 
         auto config = j["config"];
+        std::uint32_t spacing_hor = config["spacingX"];
+        std::uint32_t spacing_ver = config["spacingY"];
+        bool cropX = config["cropX"];
+        bool cropY = config["cropY"];
 
         std::vector<rbp::RectSize> glyphRectangles;
         std::uint32_t glyphIndex = 0;
         for (auto& e : j["rects"])
         {
-            glyphRectangles.emplace_back(e["w"], e["h"], glyphIndex);
+            glyphRectangles.emplace_back(e["w"] + spacing_hor, e["h"] + spacing_ver, glyphIndex);
             ++glyphIndex;
         }
 
@@ -66,10 +70,7 @@ int main(int argc, char* argv[])
             {1024, 2048},
             {2048, 2048}
         };
-        std::uint32_t spacing_hor = config["spacingX"];
-        std::uint32_t spacing_ver = config["spacingY"];
-        bool cropX = config["cropX"];
-        bool cropY = config["cropY"];
+
         std::vector<Size> textures;
 
         rbp::MaxRectsBinPack mrbp;
