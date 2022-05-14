@@ -13,15 +13,6 @@ struct Size
     uint32_t h = 0;
 };
 
-//struct RectPos
-//{
-//    RectPos() = default;
-//    RectPos(uint32_t x, uint32_t y, size_t page) : x(x), y(y), page(page) {}
-//    uint32_t x = 0;
-//    uint32_t y = 0;
-//    size_t page = 0;
-//};
-
 int main(int argc, char* argv[])
 {
     try
@@ -47,7 +38,6 @@ int main(int argc, char* argv[])
         std::uint32_t glyphIndex = 0;
         for (auto& e : j["rects"])
         {
-            //std::cout << e << '\n';
             glyphRectangles.emplace_back(e["w"], e["h"], glyphIndex);
             ++glyphIndex;
         }
@@ -148,17 +138,8 @@ int main(int argc, char* argv[])
         }
 
         j["pages"] = nlohmann::json::array();
-        //std::cout << "textures:\n";
         for (const auto& i : textures)
-        {
-            //std::cout << i.w << ":" << i.h << "\n";
             j["pages"].push_back({ {"w", i.w}, {"h", i.h}});
-        }
-
-        //std::cout << "result json:\n";
-        //std::cout << j << "\n";
-        //for (const auto& i : rectsResult)
-        //    std::cout << i.x << ":" << i.y << " " << i.page << "\n";
 
         std::ofstream of(outputFile);
         of << std::setw(4) << j;
