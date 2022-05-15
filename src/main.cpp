@@ -35,16 +35,14 @@ int main(int argc, char* argv[])
         auto config = j["config"];
         std::uint32_t spacing_hor = config["spacingX"];
         std::uint32_t spacing_ver = config["spacingY"];
+        std::uint32_t borderX = config["borderX"];
+        std::uint32_t borderY = config["borderY"];
         bool cropX = config["cropX"];
         bool cropY = config["cropY"];
 
         std::vector<rbp::RectSize> glyphRectangles;
-        std::uint32_t glyphIndex = 0;
-        for (auto& e : j["rects"])
-        {
-            glyphRectangles.emplace_back(e["w"] + spacing_hor, e["h"] + spacing_ver, glyphIndex);
-            ++glyphIndex;
-        }
+        for (uint32_t i = 0; i < j["rects"].size(); ++i)
+            glyphRectangles.emplace_back(j["rects"][i]["w"] + spacing_hor, j["rects"][i]["h"] + spacing_ver, i);
 
         std::vector<Size> textureSizeList = {
             {16, 16},
@@ -88,10 +86,13 @@ int main(int argc, char* argv[])
             for (size_t i = 0; i < textureSizeList.size(); ++i)
             {
                 const auto& ss = textureSizeList[i];
+                if (ss.w + spacing_hor <= borderX * 2)
+                    continue;
+                if (ss.h + spacing_ver <= borderY * 2)
+                    continue;
 
-                //TODO: check workAreaW,H
-                const auto workAreaW = ss.w - spacing_hor;
-                const auto workAreaH = ss.h - spacing_ver;
+                const auto workAreaW = ss.w + spacing_hor - borderX * 2;
+                const auto workAreaH = ss.h + spacing_ver - borderY * 2;
 
                 uint64_t textureSquare = static_cast<uint64_t>(workAreaW) * workAreaH;
                 if (textureSquare < allGlyphSquare && i + 1 < textureSizeList.size())
@@ -118,17 +119,20 @@ int main(int argc, char* argv[])
             std::uint32_t maxY = 0;
             for (const auto& r : arrangedRectangles)
             {
-                std::uint32_t x = r.x + spacing_hor;
-                std::uint32_t y = r.y + spacing_ver;
+                std::uint32_t x = r.x + borderX;
+                std::uint32_t y = r.y + borderY;
 
                 j["rects"][r.tag]["x"] = x;
                 j["rects"][r.tag]["y"] = y;
                 j["rects"][r.tag]["p"] = textures.size();
 
-                if (maxX < x + r.width)
-                    maxX = x + r.width;
-                if (maxY < y + r.height)
-                    maxY = y + r.height;
+                uint32_t right = x + r.width - spacing_hor + borderX;
+                uint32_t bottom = y + r.height - spacing_ver + borderY;
+
+                if (maxX < right)
+                    maxX = right;
+                if (maxY < bottom)
+                    maxY = bottom;
             }
             if (cropX)
                 lastSize.w = maxX;
